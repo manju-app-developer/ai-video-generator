@@ -6,7 +6,6 @@
     <title>Neural Narratives: A Generative Documentary Experience</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- FFmpeg is loaded here. Note that the core library will be loaded separately in the script. -->
     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -187,10 +186,8 @@
 <body class="w-full min-h-screen flex items-center justify-center p-2 sm:p-4">
     <canvas id="background-animation"></canvas>
 
-    <!-- Main Application Wrapper -->
     <div id="app-container" class="w-full max-w-7xl mx-auto flex flex-col gap-4">
         
-        <!-- "Video Player" Section -->
         <div id="video-player" class="glass-bg rounded-xl sm:rounded-2xl w-full aspect-video flex-shrink-0 relative overflow-hidden flex items-center justify-center glow-border cursor-pointer">
             
             <div id="loading-state" class="hidden text-center p-4 sm:p-8 loader-container z-10">
@@ -198,20 +195,16 @@
                 <p id="loading-text" class="text-gray-300 mt-4 text-md sm:text-lg font-medium">Generating your narrative...</p>
             </div>
 
-            <!-- Content Display -->
             <img id="display-image" src="" class="absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0 z-0" alt="Generated visual">
             <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 z-10"></div>
             
-             <!-- Watermark Display -->
-            <div id="watermark">Created by Manju</div>
+             <div id="watermark">Created by Manju</div>
 
-            <!-- End Screen -->
             <div id="end-screen" class="absolute inset-0 flex-col items-center justify-center gap-6 hidden fade-in p-4 cursor-default z-20">
                 <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-white text-center">Thanks for watching</h2>
                 <div id="end-screen-buttons" class="flex items-center gap-4 mt-4"></div>
             </div>
 
-            <!-- Player Controls (Overlay) -->
             <div id="controls-container" class="absolute bottom-0 left-0 w-full p-2 sm:p-3 pt-2 flex flex-col justify-end transition-all duration-300 hidden bg-gradient-to-t from-black/80 to-transparent cursor-default z-20">
                 <div class="w-full rounded-full progress-bar-container mb-2">
                     <div id="progress-bar" class="bg-blue-500 h-full rounded-full progress-bar-inner" style="width: 0%"></div>
@@ -228,7 +221,6 @@
                         <button id="next-scene-button" class="p-2 btn-secondary text-white disabled:opacity-30">
                            <svg class="w-5 h-5 sm:w-6 sm:h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
                         </button>
-                        <!-- Volume Control -->
                         <div class="flex items-center group">
                              <button id="volume-button" class="p-2 btn-secondary">
                                  <svg id="volume-high-icon" class="w-5 h-5 sm:w-6 sm:h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" /></svg>
@@ -253,7 +245,6 @@
         </div>
     </div>
     
-    <!-- Initial Prompt Modal -->
     <div id="prompt-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
         <div class="glass-bg rounded-2xl p-6 sm:p-8 max-w-lg w-full transform transition-all fade-in glow-border">
             <h2 class="text-xl sm:text-2xl font-bold text-white mb-2">Create a New Narrative</h2>
@@ -272,18 +263,6 @@
     
     <audio id="audio-player" class="hidden"></audio>
 
-    <!-- 
-        IMPORTANT NOTE FOR DEPLOYMENT & LOCAL DEVELOPMENT:
-
-        This application uses FFmpeg.wasm which relies on advanced browser features 
-        (SharedArrayBuffer) for performance. To enable these features, your web server 
-        must send specific HTTP headers. Without them, video encoding will be extremely 
-        slow or may fail entirely.
-
-        Required Headers:
-        Cross-Origin-Opener-Policy: same-origin
-        Cross-Origin-Embedder-Policy: require-corp
-    -->
     <script>
 document.addEventListener('DOMContentLoaded', () => {
     // --- Canvas Background Animation ---
@@ -346,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // --- API Configuration ---
-    // MODIFICATION: Use a single endpoint for our Netlify Function
+    // Use a single endpoint for our Netlify Function proxy
     const API_PROXY_URL = '/.netlify/functions/script';
     
     // --- Event Listeners ---
@@ -467,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(`Failed to generate image for prompt "${imagePrompt}". Using fallback.`, error);
             originalImageUrl = `https://placehold.co/1920x1080/0a0a0a/333333?text=Visual+Could+Not+Be+Generated`;
         }
-        // New step: add watermark via canvas
+        
         const imageUrl = await addWatermarkToImage(originalImageUrl);
 
         const audioUrl = await generateAudio(text);
@@ -635,20 +614,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- UI & State Management ---
     function resetStateForNewDocumentary() {
-          state.scriptSegments = [];
-          state.currentSegmentIndex = 0;
-          state.isPlaying = false;
-          state.encodedVideoUrl = null;
-          state.isEncoding = false;
-          state.encodingProgress = 0;
-          state.encodingFailed = false;
-          state.isDocumentaryActive = false;
-          state.allAssetsGenerated = false;
-          endScreen.classList.add('hidden');
-          watermark.style.display = 'none';
-          progressBar.style.width = '0%';
-          currentTimeEl.textContent = '00:00';
-          totalDurationEl.textContent = '00:00';
+        state.scriptSegments = [];
+        state.currentSegmentIndex = 0;
+        state.isPlaying = false;
+        state.encodedVideoUrl = null;
+        state.isEncoding = false;
+        state.encodingProgress = 0;
+        state.encodingFailed = false;
+        state.isDocumentaryActive = false;
+        state.allAssetsGenerated = false;
+        endScreen.classList.add('hidden');
+        watermark.style.display = 'none';
+        progressBar.style.width = '0%';
+        currentTimeEl.textContent = '00:00';
+        totalDurationEl.textContent = '00:00';
     }
 
     async function toggleFullscreen() {
@@ -664,12 +643,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
              try {
-                 if (screen.orientation && typeof screen.orientation.unlock === 'function') {
-                      screen.orientation.unlock();
-                 }
-                 await document.exitFullscreen();
+                if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+                    screen.orientation.unlock();
+                }
+                await document.exitFullscreen();
              } catch (err) {
-                   console.error(`Exit Fullscreen Error: ${err.message}`);
+                console.error(`Exit Fullscreen Error: ${err.message}`);
              }
         }
     }
@@ -707,9 +686,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function hideControls() {
-         if (state.isPlaying && endScreen.classList.contains('hidden')) {
-                controlsContainer.classList.add('controls-hidden');
-         }
+        if (state.isPlaying && endScreen.classList.contains('hidden')) {
+            controlsContainer.classList.add('controls-hidden');
+        }
     }
 
     function resetControlsTimeout() {
@@ -763,20 +742,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function startBackgroundEncoding() {
-          if (state.isEncoding || state.encodedVideoUrl) return; 
-          console.log("Starting background video encoding...");
-          state.isEncoding = true;
-          state.encodingFailed = false;
-          try {
-              const videoBlobUrl = await encodeFullVideo();
-              state.encodedVideoUrl = videoBlobUrl;
-              console.log("Background video encoding complete.");
-          } catch(error) {
-              console.error("Background video encoding failed:", error);
-              state.encodingFailed = true;
-          } finally {
-              state.isEncoding = false;
-          }
+        if (state.isEncoding || state.encodedVideoUrl) return; 
+        console.log("Starting background video encoding...");
+        state.isEncoding = true;
+        state.encodingFailed = false;
+        try {
+            const videoBlobUrl = await encodeFullVideo();
+            state.encodedVideoUrl = videoBlobUrl;
+            console.log("Background video encoding complete.");
+        } catch(error) {
+            console.error("Background video encoding failed:", error);
+            state.encodingFailed = true;
+        } finally {
+            state.isEncoding = false;
+        }
     }
     
     async function encodeFullVideo() {
@@ -811,11 +790,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const audioName = `audio-${i}.wav`;
                 const clipName = `clip-${i}.webm`;
 
-                // Write image (already watermarked) and audio files to FFmpeg's virtual file system
                 ffmpeg.FS('writeFile', imageName, await fetchFile(segment.imageUrl));
                 ffmpeg.FS('writeFile', audioName, await fetchFile(segment.audioUrl));
                 
-                // Simplified FFmpeg command - no complex video filters needed
                 await ffmpeg.run(
                     '-loop', '1',
                     '-i', imageName,
@@ -944,7 +921,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function formatTime(seconds) { const minutes = Math.floor(seconds / 60); const secs = Math.floor(seconds % 60); return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`; }
     
-    // MODIFICATION: Generic fetch function to call our proxy
+    // Generic fetch function to call our Netlify Function proxy
     async function fetchProxy(type, payload, retries = 3, delay = 1000) {
         for (let i = 0; i < retries; i++) {
             try {
@@ -970,7 +947,7 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error('API request failed after multiple retries.');
     }
 
-    // MODIFICATION: All API generation functions now use the fetchProxy helper
+    // All API generation functions now use the fetchProxy helper
     async function generateText(systemPrompt, userPrompt) {
         const googleApiPayload = { 
             contents: [{ parts: [{ text: userPrompt }] }], 
@@ -1042,4 +1019,3 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
